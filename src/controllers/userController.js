@@ -1,7 +1,7 @@
 
 import { ApiError } from "../utils/ApiError.js";
 import {ApiResponse} from "../utils/apiResponse.js";
-import userModel from "../models/userModel.js"
+import userModel from "../models/userModel.js";
 
 
 
@@ -36,13 +36,41 @@ const user = await userModel.create({name, lastName, email, password})
 if(!user){
     throw new ApiError(400, "User is not create")
 }
-return res.status(200).json(
-    new ApiResponse(true, 200, "User created Successfully")
-)
 
+const token = user.generateAccessToken();
+
+res.status(201).json(
+    new ApiResponse(true, 201, {user, token},  "User created Successfully")
+)
+// console.log(token);
+
+}
+
+const loginController = async(req, res) => {
+    const {email, password} = req.body;
+    if(!email && !password){
+        throw new ApiError(400, "Please enter the Email and Password in given Fields ");
+    }
+    const user = await userModel.findOne({email})
+    if(!user){
+        throw new ApiError(400, "Invalid email or password")
+    }
+    //compare Password
+    const misMatch = await user.comparePassword(password)
+    if(!misMatch){
+        throw new ApiError(400, "Invalid email and password")
+    }
+    const token = user.generateAccessToken();
+    res.status(201).json(
+        new ApiResponse(true, 201, {message: "Login Successfully",  user, token, })
+    )
 
 }
 
 
 
-export {registerController}
+
+export {
+    registerController,
+    loginController
+}
