@@ -10,6 +10,11 @@ import connectDB from './src/middlewares/db.js';
 // routes imports
 import testRoutes from './src/routes/testRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
+import userRoutes from './src/routes/userRoutes.js';
+import { ApiError } from './src/utils/ApiError.js';
+import { asyncHandler } from './src/utils/async_Handler.js';
+import jobsRoutes from './src/routes/jobRoutes.js';
+
 
 
 
@@ -24,7 +29,15 @@ const app = express();
 
 //middlewares
 app.use(express.json());
-app.use(cors());
+
+//cors
+app.use(cors({
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    origin: true
+}));
+
+//morgan
 app.use(morgan("dev"));
 
 
@@ -32,7 +45,8 @@ app.use(morgan("dev"));
 //routes
 app.use('/api/v1/test', testRoutes);
 app.use('/api/v1/auth', authRoutes);
-
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/jobs', jobsRoutes);
 
 
 //PORT

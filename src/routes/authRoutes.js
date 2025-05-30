@@ -14,6 +14,9 @@ router.post('/register', registerController)
 //login
 router.post('/login', loginController)
 
+//logout
+
+
 
 
 //export

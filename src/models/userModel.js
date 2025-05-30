@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import validator from 'validator';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 
 //Schema
 
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
     name:{
         type: String,
         required: true
@@ -27,7 +27,7 @@ const userSchema = new Schema({
         type: Number
     },
     phoneNumber:{
-        type:Number
+        type: String,
     },
     password:{
         type:String,
@@ -45,10 +45,28 @@ const userSchema = new Schema({
 
 
 // middelware bcryptjs for password encrypt
-userSchema.pre("save", async function(){
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+userSchema.pre("save", async function(next){
+    console.log(">>> Inside pre-save hook");
+  console.log("password before hashing:", this.password);
+    if(!this.isModified("password")) return next();
+     console.log("password not modified. Skipping...");
+    //if password is not modified then return
+
+    //if password is modified then hash the password
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        console.log("password after hashing:", this.password);
+        next();
+    } catch (error) {
+        next(error);
+        
+    }
 });
+
+
+
+
 
 
 //compare Password function
@@ -65,12 +83,14 @@ userSchema.methods.generateAccessToken = function(){
         {
             id: this._id,
             email: this.email,
-            name:this.name,
-            password: this.password
+            name:this.name
         }, process.env.JWT_SECRET, {expiresIn: '1d'});
 };
 
 
 
 
-export default mongoose.model('User', userSchema)
+// export default mongoose.model('User', userSchema)
+const userModel = mongoose.model('User', userSchema);
+export default userModel;
+// console.log("User Model is created successfully");
