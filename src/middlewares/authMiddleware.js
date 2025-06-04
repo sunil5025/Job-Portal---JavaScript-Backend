@@ -1,10 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { ApiError } from '../utils/ApiError.js';
 import userModel from '../models/userModel.js';
+import { asyncHandler } from '../utils/async_Handler.js';
 
 
 
-const userAuthentication = async(req, res, next) => {
+const userAuthentication = asyncHandler(async(req, res, next) => {
     const authHeader = req.headers.authorization
     if(!authHeader || !authHeader.startsWith('Bearer')){
         throw new ApiError(400, "Authorization Failed")
@@ -28,11 +29,12 @@ const userAuthentication = async(req, res, next) => {
             email: user.email,
             name: user.name
         }
+        console.log("Authenticated user:", req.user);
         next();
     } catch (error) {
         throw new ApiError(400, "Auth Failed")
         
     }
-}
+})
 
 export  {userAuthentication}

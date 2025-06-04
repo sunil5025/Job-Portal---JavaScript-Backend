@@ -91,6 +91,6 @@ userSchema.methods.generateAccessToken = function(){
 
 
 // export default mongoose.model('User', userSchema)
-const userModel = mongoose.model('User', userSchema);
-export default userModel;
+const User = mongoose.model('User', userSchema);
+export default User;
 // console.log("User Model is created successfully");
