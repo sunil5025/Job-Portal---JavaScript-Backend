@@ -2,7 +2,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jobsModel from "../models/jobsModel.js";
 import { asyncHandler } from "../utils/async_Handler.js";
-
+import mongoose from "mongoose";
+import moment from "moment";
 
 
 ////////// Create a job controller //////////
@@ -122,8 +123,73 @@ const deleteJobController = asyncHandler(async(req, res) => {
 })
 
 
+
+////////////////////////   JOBS STATS FILTER CONTROLLER   ////////////////////////
+// This controller retrieves job statistics based on various filters.
+const getJobStatsController = asyncHandler(async(req, res) => {
+    const stats = await jobsModel.aggregate([
+        //serch by user jobs
+        {
+            $match:{
+                createdBy: new mongoose.Types.ObjectId(req.user._id)
+            },
+           
+        },
+        {
+            $group:{
+                _id: "$status",
+                count: {$sum:1}
+            }
+        }
+    ])
+
+    //DEFAULT STATS
+    const defaultstats = {
+        interview: stats.interview || 0,
+        pending: stats.pending || 0,
+        rejected: stats.rejected || 0,
+    }
+// Monthly stats of applications
+    let monthlyApplications = await jobsModel.aggregate([
+        {
+            $match:{
+                createdBy: new mongoose.Types.ObjectId(req.user._id)
+            },
+        },
+        {
+            $group:{
+                _id: {
+                    year: {$year: "$createdAt"},
+                    month: {$month: "$createdAt"},
+                },
+                count: {$sum:1}
+            },
+        },
+    ])
+
+
+    /////////////// moment package ///////////////
+    // This is used to format the date in a readable format.
+    // Sort monthly applications by year and month through moment package
+    monthlyApplications = monthlyApplications.map(item => {
+        const {_id: {year, month}, count} = item;
+        const date = moment().year(year).month(month -1).format("MMM - YYYY");
+        return {date, count}
+    }).reverse();
+
+
+
+    // response
+    res.status(200).json(
+        new ApiResponse(true, 200, {totalJob: stats.length , message: "Job stats retrieved successfully", stats , stats: defaultstats, monthlyApplications})
+    )
+
+});
+
+
 export { createJobController,
          getAllJobsController,
          updateJobController,
-         deleteJobController
+         deleteJobController,
+         getJobStatsController
  }

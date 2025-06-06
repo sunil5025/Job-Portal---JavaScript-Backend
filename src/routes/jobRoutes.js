@@ -1,6 +1,10 @@
 import express from 'express';
 import {userAuthentication} from '../middlewares/authMiddleware.js';
-import { createJobController, updateJobController, getAllJobsController, deleteJobController } from '../controllers/jobsController.js';
+ import { createJobController,
+            updateJobController,
+            getAllJobsController,
+            deleteJobController,
+            getJobStatsController } from '../controllers/jobsController.js';
 
 
 
@@ -22,5 +26,9 @@ router.patch('/update-job/:id', userAuthentication, updateJobController)
 
 // delete job || delete
 router.delete('/delete-job/:id', userAuthentication, deleteJobController)
+
+
+// JOBS STATS FILTER || get
+router.get('/job-stats', userAuthentication, getJobStatsController)
 
 export default router;
