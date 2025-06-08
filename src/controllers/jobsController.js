@@ -37,12 +37,73 @@ const createJobController = asyncHandler(async(req, res) => {
 ////////// Get all jobs controller //////////
 // This controller retrieves all job postings created by the authenticated user.
 const getAllJobsController = asyncHandler(async(req, res) => {
-    const jobs = await jobsModel.find({createdBy: req.user._id})
+    const {status, workType, search, sort} = req.query;
+    //condition for searching filters
+    const queryObject = {
+        createdBy : req.user._id
+    }
+
+    //logic filter
+    ////////// status 
+    // If status is provided and is not "all", it will filter jobs based on the status field.
+    if(status && status !== "all"){
+        queryObject.status = status;
+    }
+
+
+    /////////// workType
+    // If workType is provided and is not "all", it will filter jobs based on the workType field.
+    if(workType && workType !== "all"){
+        queryObject.workType = workType;
+    }
+
+
+    ////////// search
+    // If search query is provided, it will filter jobs based on the position field.
+    if(search){
+        queryObject.position = {$regex: search, $options: "i"}; // 'i' for case-insensitive search     [ regex: search, $options: "i" ] is used to perform a case-insensitive search on the position field.
+    }
+
+
+    let queryResult = jobsModel.find(queryObject)
+
+    ////// sorting
+    // If sort query is provided, it will sort the jobs based on the specified field.
+    if(sort === "latest"){
+       queryResult =  queryResult.sort("-createdAt"); // Sort by createdAt in descending order  [ -createdAt  = sort by latest created job ]
+    }
+    if(sort === "oldest"){
+         queryResult = queryResult.sort("createdAt"); // Sort by createdAt in ascending order  [ createdAt = sort by oldest created job ]
+    }
+    if(sort === "a-z"){
+        queryResult = queryResult.sort("position"); // Sort by position in ascending order  [ position = sort by job position in alphabetical order ]
+    }
+    if(sort === "z-a"){
+        queryResult = queryResult.sort("-position"); // Sort by position in descending order  [ -position = sort by job position in reverse alphabetical order ]
+    }
+   
+
+    //// Pagination
+    const page = Number(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = Number(req.query.limit) || 10; // Default to 10 items per page if not provided
+    const skip = (page - 1) * limit; // Calculate the number of items to skip based on the current page and limit
+    queryResult = queryResult.skip(skip).limit(limit); // Apply pagination to the query
+
+    //// Jobs Count
+    const totalJobs = await jobsModel.countDocuments(queryResult); // Count the total number of jobs matching the query
+    const numOfPages = Math.ceil(totalJobs / limit); // Calculate the total number of pages based on the total jobs and limit  [ Math.ceil means round up to the nearest whole number ]
+
+
+    const jobs = await queryResult;
+
+
+
+    // const jobs = await jobsModel.find({createdBy: req.user._id})
     if(!jobs){
         throw new ApiError(404, "No jobs found");
     }
     res.status(201).json(
-        new ApiResponse(true, 201, {message: "All jobs retrieved successfully", totaljobs: jobs.length, jobs})
+        new ApiResponse(true, 201, {message: "All jobs retrieved successfully", totalJobs, jobs, numOfPages})
     )
 
 })
@@ -124,6 +185,7 @@ const deleteJobController = asyncHandler(async(req, res) => {
 
 
 
+
 ////////////////////////   JOBS STATS FILTER CONTROLLER   ////////////////////////
 // This controller retrieves job statistics based on various filters.
 const getJobStatsController = asyncHandler(async(req, res) => {
@@ -185,6 +247,12 @@ const getJobStatsController = asyncHandler(async(req, res) => {
     )
 
 });
+
+
+
+
+
+
 
 
 export { createJobController,

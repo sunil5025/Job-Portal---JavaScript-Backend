@@ -63,16 +63,19 @@ return res.status(201).json(
 // login 
 const loginController = async(req, res) => {
     const {email, password} = req.body;
-    if(!email && !password){
+    if(!email || !password){
         throw new ApiError(400, "Please enter the Email and Password in given Fields ");
     }
-    const user = await userModel.findOne({email})
+    
+    const user = await userModel.findOne({email: { $regex: `^${email}$`, $options: 'i' }})  // case-insensitive search [because email is unique sometime user enter email in small letter and sometimes in capital letter]
+    // console.log("User found from DB:", user);
     if(!user){
         throw new ApiError(400, "Invalid email or password")
     }
+   
     //compare Password
-    const misMatch = await user.comparePassword(password)
-    if(!misMatch){
+    const isMatch = await user.comparePassword(password)
+    if(!isMatch){
         throw new ApiError(400, "Invalid email and password")
     }
     const token = user.generateAccessToken();

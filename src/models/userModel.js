@@ -21,7 +21,9 @@ const userSchema = new mongoose.Schema({
         type:String,
         required: true,
         unique: true,
+        lowercase: true, // to make email lowercase 
         validate: validator.isEmail
+        
     },
     age:{
         type: Number
