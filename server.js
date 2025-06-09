@@ -1,6 +1,9 @@
-// const express = require('express');
+// API Documentation: import
+import swaggerUi from 'swagger-ui-express';      // swagger-ui-express is used to serve the Swagger UI
+import swaggerDoc from 'swagger-jsdoc';         // swagger-jsdoc is used to generate Swagger documentation from JSDoc comments
 //packages imports
 import express from 'express';
+
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -30,6 +33,25 @@ dotenv.config();
 
 //////mongoDB connection
 connectDB();
+
+
+//swagger api configuration
+const options = {
+    swaggerDefinition: {
+        openapi: '3.0.0',
+        info: {
+            title: "Job Portal Application",
+            description: "Node Express MongoDB Job Portal Application"
+        },
+        servers: [
+            {
+                url: "http://localhost:8080"
+            },
+        ],
+    },
+    apis: ["./src/routes/*.js"], // Path to the API docs     [ /*.js is used to include all js files in the routes folder]
+};
+const swaggerSpec = swaggerDoc(options);
 
 //rest Object
 const app = express();
@@ -63,6 +85,8 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/jobs', jobsRoutes);
 
+///// home route root
+app.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerSpec)); // API Documentation route
 
 
 /////PORT
