@@ -21,8 +21,8 @@ import connectDB from './src/middlewares/db.js';
 import testRoutes from './src/routes/testRoutes.js';
 import authRoutes from './src/routes/authRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
-import { ApiError } from './src/utils/ApiError.js';
-import { asyncHandler } from './src/utils/async_Handler.js';
+// import { ApiError } from './src/utils/ApiError.js';
+// import { asyncHandler } from './src/utils/async_Handler.js';
 import jobsRoutes from './src/routes/jobRoutes.js';
 
 
