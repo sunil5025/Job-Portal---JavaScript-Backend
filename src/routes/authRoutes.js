@@ -1,8 +1,10 @@
 import express from 'express';
-import { loginController, registerController } from '../controllers/userController.js';
+import { loginController, logoutController, registerController } from '../controllers/userController.js';
 import { rateLimit } from 'express-rate-limit';
 import { loginValidator } from '../middlewares/validators.js';
 import { validationResult } from 'express-validator';
+import { userAuthentication } from '../middlewares/authMiddleware.js';
+
 
 
 
@@ -150,7 +152,7 @@ router.post('/login', limiter, loginValidator, loginController , (req, res, next
 
 //logout
 
-
+router.post('/logout', userAuthentication, logoutController)
 
 
 //export

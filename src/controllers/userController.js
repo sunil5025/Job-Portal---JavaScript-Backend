@@ -61,7 +61,7 @@ return res.status(201).json(
 
 
 // login 
-const loginController = async(req, res) => {
+const loginController = asyncHandler ( async(req, res) => {
     const {email, password} = req.body;
     if(!email || !password){
         throw new ApiError(400, "Please enter the Email and Password in given Fields ");
@@ -83,16 +83,34 @@ const loginController = async(req, res) => {
         new ApiResponse(true, 201, {message: "Login Successfully",  user, token, })
     )
 
-}
+});
 
 
-//logout
+/////////logout
+const logoutController = asyncHandler(async(req, res) => {
+  
+    const user = req.user?._id;
+
+    if (!user) {
+        throw new ApiError(400, "User not found, please login again");
+    }
+
+    console.log(`User ${user} is logging out`);
+
+    // Nothing to clear server-side — just send success response
+    return res.status(200).json(
+        new ApiResponse(true, 200, { message: "Logout successfully" })
+    );
+});
+
+
 
 
 
 
 export {
     registerController,
-    loginController
+    loginController,
+    logoutController
     
 }
